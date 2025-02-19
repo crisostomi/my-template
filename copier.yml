@@ -29,15 +29,15 @@ push_to_repo:
 
 github_username:
   type: str
-  help: "Enter the GitHub username"
-  default: "grok-ai"
-  when: push_to_repo
+  help: "Enter your GitHub username (leave blank if not pushing to GitHub)"
+  when: "{{ push_to_repo }}"
+  default: "{{ 'grok-ai' }}"
 
 github_project:
   type: str
-  help: "Enter the GitHub project name"
+  help: "Enter the GitHub project name (leave blank if not pushing to GitHub)"
+  when: "{{ push_to_repo }}"
   default: "{{ project_name }}"
-  when: push_to_repo
 
 license:
   type: str
