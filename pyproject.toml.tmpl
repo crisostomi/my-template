@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools", "wheel", "setuptools_scm[toml]"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true
+
+[project]
+name = "{{ project_name }}"
+description = "{{ description }}"
+dynamic = ["version"]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = "{{ python_version }}"
+dependencies = [
+    {{ dependencies | tojson }},
+    "{{ package_name }}"  # Add the current package name as a fixed dependency
+]
+
+maintainers = [
+{% for maintainer in maintainers %}
+    { name = "{{ maintainer.name }}"{% if maintainer.email %}, email = "{{ maintainer.email }}"{% endif %} },
+{% endfor %}
+]
+
+[tool.uv.sources]
+{{ package_name }} = { workspace = true }
+
+[tool.setuptools]
+packages = ["src/{{ package_name }}"]
+
+[tool.pytest.ini_options]
+minversion = "6.2"
+addopts = "-ra"
+testpaths = ["src/tests"]
+
+[tool.mypy]
+files = ["src/**/*.py", "src/tests/**/*.py"]
+ignore_missing_imports = true
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "node_modules",
+]
+line-length = 88
+indent-width = 4
+target-version = "py38"
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]

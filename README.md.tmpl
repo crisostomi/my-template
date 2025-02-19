@@ -1,0 +1,54 @@
+# {{ project_name }}
+
+{{ description }}
+
+---
+
+## 🚀 Installation
+
+You can install this project using [`uv`](https://github.com/astral-sh/uv):
+
+```sh
+uv sync
+```
+
+---
+
+## 📂 Project Structure
+
+```
+{{ project_name }}/
+├── src/                     # Source directory
+│   ├── {{ package_name }}/  # Main package
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   ├── tests/               # Test suite
+│   │   ├── test_main.py
+├── pyproject.toml           # Package configuration
+├── README.md                # This file
+└── LICENSE                  # License information
+```
+
+---
+
+## 🧪 Running Tests
+
+To run the test suite:
+
+```sh
+uv run pytest
+```
+
+---
+
+## 👤 Maintainers
+
+{% for maintainer in maintainers %}
+- **{{ maintainer.name }}**{% if maintainer.email %} - [{{ maintainer.email }}](mailto:{{ maintainer.email }}){% endif %}
+{% endfor %}
+
+---
+
+## 📜 License
+
+This project is licensed under the **{{ license }}** License. See [LICENSE](LICENSE) for more details.
