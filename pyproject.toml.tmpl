@@ -13,7 +13,9 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = "{{ python_version }}"
 dependencies = [
-    {{ dependencies | tojson }},
+    {% for dep in dependencies %}
+    "{{ dep }}",
+    {% endfor %}
     "{{ package_name }}"  # Add the current package name as a fixed dependency
 ]
 
@@ -25,9 +27,6 @@ maintainers = [
 
 [tool.uv.sources]
 {{ package_name }} = { workspace = true }
-
-[tool.setuptools]
-packages = ["src/{{ package_name }}"]
 
 [tool.pytest.ini_options]
 minversion = "6.2"

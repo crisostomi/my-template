@@ -65,10 +65,17 @@ dependencies:
     - dvc
     - python-dotenv
 
+env_init:
+  type: bool
+  help: "Do you want to initialize the environment?"
+  default: true
+
 _tasks:
     - "rm setup.sh" # This file is used to bootstrap the project via curl, no need to keep it
+    - "{% if env_init %}uv sync{% endif %}"
     - "git init"
+    - "{% if use_precommit %}pre-commit install{% endif %}"
     - "git add ."
-    - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template'"
+    - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify"
     - "{% if push_to_repo %}git remote add origin https://github.com/{{ github_username }}/{{ github_project }}{% endif %}"
     - "{% if push_to_repo %}git push -u origin main{% endif %}"

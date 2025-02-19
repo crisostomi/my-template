@@ -21,7 +21,7 @@ You can use the `setup.sh` script to initialize your project based on this templ
 Run the following command to automatically download and run the `setup.sh` script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/grok-ai/py-template/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/grok-ai/py-template/main/setup.sh -o setup.sh && bash setup.sh
 ```
 
 This command will:
