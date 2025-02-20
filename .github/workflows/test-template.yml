@@ -1,0 +1,71 @@
+name: Test py-template
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  PROJECT_NAME: test-project
+
+jobs:
+  test-template:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        use_precommit: [true, false]
+        env_init: [true, false]
+
+    steps:
+      - name: 🛎️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚡ Install Dependencies (UV)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin:$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: 🛠️ Configure Git for Test Repo
+        run: |
+          git config --global init.defaultBranch main
+          git config --global user.name "GitHubActions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+
+      - name: 🚀 Generate Project with
+        run: |
+          uvx copier copy --trust --force . ${{ env.PROJECT_NAME }} \
+            -d push_to_repo=false \
+            -d use_precommit=${{ matrix.use_precommit }} \
+            -d env_init=${{ matrix.env_init }}
+
+
+
+      - name: 🛠️ Check Git Initialization
+        working-directory: ${{ env.PROJECT_NAME }}
+        run: |
+          if [ -d ".git" ]; then echo "✅ Git initialized"; else echo "❌ Git not initialized" && exit 1; fi
+
+      - name: 🔎 Ensure Pre-Commit is Installed (if enabled)
+        if: matrix.use_precommit
+        working-directory: ${{ env.PROJECT_NAME }}
+        run: |
+          if ${{ matrix.env_init }}; then
+            echo "🟢 Using pre-commit inside the virtual environment"
+            uv run pre-commit --version
+          else
+            echo "🟠 Manually (uvx) running pre-commit (no virtual environment)"
+            uvx pre-commit --version
+          fi
+
+      - name: 📦 Check Dependencies Installation (if env_init=true)
+        if: matrix.env_init
+        working-directory: ${{ env.PROJECT_NAME }}
+        run: |
+          uv sync
+          uv pip list | grep rich || { echo "❌ Dependency installation failed"; exit 1; }
+
+      - name: ✅ Run Tests (if test files exist)
+        working-directory: ${{ env.PROJECT_NAME }}
+        run: |
+          if [ -d "tests" ]; then pytest || { echo "❌ Tests failed"; exit 1; } else echo "⚠️ No tests found"; fi

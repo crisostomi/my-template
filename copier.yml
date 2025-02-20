@@ -1,15 +1,10 @@
 _min_copier_version: "9.5.0"
 _templates_suffix: ".tmpl"
 
-project_name:
-  type: str
-  help: "What is your folder/project name?"
-  default: "{{ _copier_conf.dst_path|basename }}"
-
 package_name:
   type: str
-  help: "Enter the Python package name (default: project name in lowercase, no spaces)"
-  default: "{{ project_name|lower|replace(' ', '_') }}"
+  help: "Enter the Python package name (default: folder name in lowercase, no spaces)"
+  default: "{{ _copier_conf.dst_path|basename|lower|replace(' ', '_') }}"
 
 description:
   type: str
@@ -31,13 +26,13 @@ github_username:
   type: str
   help: "Enter your GitHub username (leave blank if not pushing to GitHub)"
   when: "{{ push_to_repo }}"
-  default: "{{ 'grok-ai' }}"
+  default: "grok-ai"
 
 github_project:
   type: str
   help: "Enter the GitHub project name (leave blank if not pushing to GitHub)"
   when: "{{ push_to_repo }}"
-  default: "{{ project_name }}"
+  default: "{{ _copier_conf.dst_path|basename }}"
 
 license:
   type: str
@@ -73,9 +68,9 @@ env_init:
 
 _tasks:
     - "rm setup.sh" # This file is used to bootstrap the project via curl, no need to keep it
-    - "{% if env_init %}uv sync && source .venv/bin/activate {% endif %}"
+    - "{% if env_init %}uv sync{% endif %}"
     - "git init"
-    - "{% if use_precommit %}pre-commit install{% endif %}" # Assuming pre-commit is installed system-wide or in the venv
+    - "{% if use_precommit %}uv run pre-commit install{% endif %}" # Assuming pre-commit is installed system-wide or in the venv
     - "git add ."
     - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify"
     - "{% if push_to_repo %}git remote add origin https://github.com/{{ github_username }}/{{ github_project }}{% endif %}"

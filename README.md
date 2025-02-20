@@ -4,31 +4,39 @@ A template to bootstrap Python projects following best practices.
 
 ## 🚀 How to Use This Template
 
-Follow these steps to create a new project using this template:
+You can create a new project using this template in **two ways**:
 
-### 1. Create a New Project Directory
-
-First, navigate to the directory where you want to create your new project.
-
-```bash
-cd /path/to/your/projects
-```
-
-### 2. Run the Setup Script
-
-You can use the `setup.sh` script to initialize your project based on this template. The script will help you set up your project directory, initialize version control, and (optionally) push to a specified GitHub repository.
-
-Run the following command to automatically download and run the `setup.sh` script:
+### 🔹 Option 1: Automatic Setup (Recommended)
+Use the `setup.sh` script to automatically download and set up everything.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/grok-ai/py-template/main/setup.sh -o setup.sh && bash setup.sh
 ```
 
-This command will:
+This will:
+- Prompt you for a project name
+- Install `uv` if not already installed
+- Use **Copier** to create a new project
+- Set up dependencies automatically
 
-- Download the `setup.sh` script from GitHub.
-- Execute it, which will prompt you for some initial configurations like the **project name**, **Python package name**, **GitHub username**, and **repository details**.
-- Initialize the project directory, configure Git, and optionally push to a GitHub repository, which must be manually created beforehand (if push_to_repo is set to true during setup).
+### 🔹 Option 2: Manual Setup
+If you prefer a **manual setup**, you can install the required tools and run Copier yourself.
+
+#### **📌 Prerequisites**
+Before running Copier manually, ensure you have [`uv`](https://github.com/astral-sh/uv) (for managing dependencies)
+
+Install it using:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+```
+
+Then, create a new project with:
+
+```bash
+uvx copier copy --trust gh:grok-ai/py-template my-new-project
+```
 
 ### 3. Customize the Project
 
@@ -48,7 +56,7 @@ If you did not choose to push to GitHub, you can still manually create the repos
 
 ```bash
 # Add the GitHub remote
-git remote add origin https://github.com/{{ github_username }}/{{ github_project }}
+git remote add origin https://github.com/your/repository
 
 # Push the project
 git push -u origin main
