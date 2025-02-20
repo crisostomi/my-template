@@ -60,10 +60,11 @@ use_precommit:
 dependencies:
   type: yaml
   help: "Enter a list of dependencies (comma-separated)"
-  default:
+  default: |
     - rich
     - dvc
     - python-dotenv
+    {% if use_precommit %}- pre-commit{% endif %}
 
 env_init:
   type: bool
@@ -72,9 +73,9 @@ env_init:
 
 _tasks:
     - "rm setup.sh" # This file is used to bootstrap the project via curl, no need to keep it
-    - "{% if env_init %}uv sync{% endif %}"
+    - "{% if env_init %}uv sync && source .venv/bin/activate {% endif %}"
     - "git init"
-    - "{% if use_precommit %}pre-commit install{% endif %}"
+    - "{% if use_precommit %}pre-commit install{% endif %}" # Assuming pre-commit is installed system-wide or in the venv
     - "git add ."
     - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify"
     - "{% if push_to_repo %}git remote add origin https://github.com/{{ github_username }}/{{ github_project }}{% endif %}"
