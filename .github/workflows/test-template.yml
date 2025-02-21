@@ -14,8 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        remote_option: ["GitHub", "manual", "No"]
+        remote_github_protocol: ["https", "ssh"]
         use_precommit: [true, false]
         env_init: [true, false]
+        exclude:
+          # Exclude "No" + "manual" from using any protocol
+          - remote_option: "No"
+            remote_github_protocol: "ssh"
+          - remote_option: "No"
+            remote_github_protocol: "https"
+          - remote_option: "manual"
+            remote_github_protocol: "ssh"
+          - remote_option: "manual"
+            remote_github_protocol: "https"
 
     steps:
       - name: 🛎️ Checkout Repository
@@ -35,11 +47,14 @@ jobs:
       - name: 🚀 Generate Project with
         run: |
           uvx copier copy --trust --force . ${{ env.PROJECT_NAME }} \
-            -d push_to_repo=false \
+            -d remote_option=${{ matrix.remote_option }} \
+            -d remote_github_protocol=${{ matrix.remote_github_protocol }} \
+            -d remote_github_username=grok-ai \
+            -d remote_github_project=dummy-repo \
+            -d manual_remote=https://github.com/grok-ai/dummy-repo \
+            -d push_to_remote=false \
             -d use_precommit=${{ matrix.use_precommit }} \
             -d env_init=${{ matrix.env_init }}
-
-
 
       - name: 🛠️ Check Git Initialization
         working-directory: ${{ env.PROJECT_NAME }}
