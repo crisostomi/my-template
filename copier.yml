@@ -53,6 +53,12 @@ remote_github_project:
   default: "{{ package_name }}"
   when: "{{ remote_option == 'GitHub' }}"
 
+push_to_remote:
+  type: bool
+  help: "Do you want to push the project to the remote repository?"
+  when: "{{ remote_option != 'No' }}"
+  default: true
+
 license:
   type: str
   help: "Choose a license"
@@ -110,4 +116,4 @@ _tasks:
   - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify"
   # Add remote only if it's set
   - "{% if remote_option != 'No' %}git remote add origin {{ remote.strip() }}{% endif %}"
-  - "{% if remote_option != 'No' %}git push -u origin main{% endif %}"
+  - "{% if push_to_remote %}git push -u origin main{% endif %}"
