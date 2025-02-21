@@ -17,22 +17,41 @@ maintainers:
   default:
     - { name: "Your Name", email: "your.email@example.com" }
 
-push_to_repo:
-  type: bool
-  help: "Do you want to push the project to an EXISTING & EMPTY GitHub repository?"
-  default: true
-
-github_username:
+remote_option:
+  help: "Do you want to push the project to an existing repository? If so, how would you like to add the remote?"
   type: str
-  help: "Enter your GitHub username (leave blank if not pushing to GitHub)"
-  when: "{{ push_to_repo }}"
+  choices:
+    - "GitHub"
+    - "manual"
+    - "No"
+  default: "GitHub"
+
+manual_remote:
+  type: str
+  help: "Enter the remote URL"
+  default: "https://github.com/grok-ai/py-template"
+  when: "{{ remote_option == 'manual' }}"
+
+remote_github_protocol:
+  type: str
+  help: "Choose the GitHub protocol"
+  choices:
+    - "https"
+    - "ssh"
+  default: "https"
+  when: "{{ remote_option == 'GitHub' }}"
+
+remote_github_username:
+  type: str
+  help: "Enter your GitHub username"
   default: "grok-ai"
+  when: "{{ remote_option == 'GitHub' }}"
 
-github_project:
+remote_github_project:
   type: str
-  help: "Enter the GitHub project name (leave blank if not pushing to GitHub)"
-  when: "{{ push_to_repo }}"
-  default: "{{ _copier_conf.dst_path|basename }}"
+  help: "Enter the name of the GitHub project"
+  default: "{{ package_name }}"
+  when: "{{ remote_option == 'GitHub' }}"
 
 license:
   type: str
@@ -66,12 +85,29 @@ env_init:
   help: "Do you want to initialize the environment?"
   default: true
 
+remote:
+  type: str
+  when: false
+  default: >
+    {% if remote_option == "GitHub" %}
+      {% if remote_github_protocol == "https" -%}
+        https://github.com/{{ remote_github_username }}/{{ remote_github_project }}.git
+      {%- elif remote_github_protocol == "ssh" -%}
+        git@github.com:{{ remote_github_username }}/{{ remote_github_project }}.git
+      {%- endif %}
+    {%- elif remote_option == "manual" %}
+      {{ manual_remote if manual_remote else "" }}
+    {%- else %}
+      ""  # No remote URL
+    {%- endif %}
+
 _tasks:
-    - "rm setup.sh" # This file is used to bootstrap the project via curl, no need to keep it
-    - "{% if env_init %}uv sync{% endif %}"
-    - "git init"
-    - "{% if use_precommit %}uv run pre-commit install{% endif %}" # Assuming pre-commit is installed system-wide or in the venv
-    - "git add ."
-    - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify"
-    - "{% if push_to_repo %}git remote add origin https://github.com/{{ github_username }}/{{ github_project }}{% endif %}"
-    - "{% if push_to_repo %}git push -u origin main{% endif %}"
+  - "rm setup.sh" # This file is used to bootstrap the project via curl, no need to keep it
+  - "{% if env_init %}uv sync{% endif %}"
+  - "git init"
+  - "{% if use_precommit %}uv run pre-commit install{% endif %}" # Assuming pre-commit is installed system-wide or in the venv
+  - "git add ."
+  - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify"
+  # Add remote only if it's set
+  - "{% if remote_option != 'No' %}git remote add origin {{ remote.strip() }}{% endif %}"
+  - "{% if remote_option != 'No' %}git push -u origin main{% endif %}"
