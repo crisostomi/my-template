@@ -86,6 +86,9 @@ Once set up, manage dependencies with uv. The virtual environment is stored in `
 - **Pre-commit Hooks**: If enabled, sets up [pre-commit hooks](https://pre-commit.com/).
 - **Modern Project Structure**: Uses an organized `src/` layout.
 - **Flexible**: Simple configuration logic for licensing, dependencies, and environment setup.
+- **`PROJECT_ROOT` Variable**: Automatically defines this variable in the main package (using git).
+- **Auto-loads `.env`**: Loads environment variables from a `.env` file automatically.
+- **Built-in Utilities**: Ships with a `utils.py` file for common utility functions.
 
 ---
 
