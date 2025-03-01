@@ -79,11 +79,12 @@ use_precommit:
 
 dependencies:
   type: yaml
-  help: "Enter a list of dependencies (comma-separated)"
+  help: "Enter a list of dependencies (comma-separated). The suggested ones are essential for the template to fully work."
   default: |
     - rich
     - dvc
     - python-dotenv
+    - GitPython
     {% if use_precommit %}- pre-commit{% endif %}
 
 env_init:
@@ -108,7 +109,7 @@ remote:
     {%- endif %}
 
 _tasks:
-  - "rm setup.sh" # This file is used to bootstrap the project via curl, no need to keep it
+  - "rm -rf setup.sh .github" # Remove template-specific files
   - "{% if env_init %}uv sync{% endif %}"
   - "git init"
   - "{% if use_precommit %}uv run pre-commit install{% endif %}" # Assuming pre-commit is installed system-wide or in the venv
