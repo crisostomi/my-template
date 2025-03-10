@@ -4,9 +4,9 @@ import random
 from contextlib import contextmanager
 from typing import Optional
 
+
 import dotenv
 import numpy as np
-import torch
 
 pylogger = logging.getLogger(__name__)
 
@@ -14,12 +14,11 @@ pylogger = logging.getLogger(__name__)
 def get_env(env_name: str, default: Optional[str] = None) -> str:
     """Safely read an environment variable.
 
-    Raises errors if it is not defined or it is empty.
+    Raises errors if it is not defined or is empty.
 
-    :param env_name: the name of the environment variable
-    :param default: the default (optional) value for the environment variable
-
-    :return: the value of the environment variable
+    :param env_name: Name of the environment variable.
+    :param default: Optional default value if the variable is not set.
+    :return: The environment variable's value.
     """
     if env_name not in os.environ:
         if default is None:
@@ -42,13 +41,13 @@ def get_env(env_name: str, default: Optional[str] = None) -> str:
 
 
 def load_envs(env_file: Optional[str] = None) -> None:
-    """Load all the environment variables defined in the `env_file`.
+    """Load environment variables from a file.
 
-    This is equivalent to `. env_file` in bash.
+    This is equivalent to sourcing the file in a shell.
 
     It is possible to define all the system specific variables in the `env_file`.
 
-    :param env_file: the file that defines the environment variables to use. If None
+    :param env_file: The file that defines the environment variables to use. If None,
                      it searches for a `.env` file in the project.
     """
     if env_file is None:
@@ -72,7 +71,8 @@ def environ(**kwargs):
     :type kwargs: dict[str, unicode]
     :param kwargs: Environment variables to set
     """
-    old_environ = dict(os.environ)
+    # Use a copy of os.environ to ensure we have an independent backup.
+    old_environ = os.environ.copy()
     os.environ.update(kwargs)
     try:
         yield
@@ -89,7 +89,8 @@ min_seed_value = np.iinfo(np.uint32).min
 def _select_seed_randomly(
     min_seed_value: int = min_seed_value, max_seed_value: int = max_seed_value
 ) -> int:
-    return random.randint(min_seed_value, max_seed_value)  # noqa: S3
+    """Select a random seed within the provided bounds."""
+    return random.randint(min_seed_value, max_seed_value) # noqa: S3
 
 
 def seed_everything(seed: Optional[int] = None) -> int:
@@ -107,30 +108,36 @@ def seed_everything(seed: Optional[int] = None) -> int:
     if seed is None:
         env_seed = os.environ.get("PL_GLOBAL_SEED")
         if env_seed is None:
-            seed = _select_seed_randomly(min_seed_value, max_seed_value)
-            pylogger.warn(f"No seed found, seed set to {seed}")
+            seed = _select_seed_randomly()
+            pylogger.warning(f"No seed found, seed set to {seed}")
         else:
             try:
                 seed = int(env_seed)
             except ValueError:
-                seed = _select_seed_randomly(min_seed_value, max_seed_value)
-                pylogger.warn(
-                    f"Invalid seed found: {repr(env_seed)}, seed set to {seed}"
+                seed = _select_seed_randomly()
+                pylogger.warning(
+                    f"Invalid seed found: {env_seed!r}, seed set to {seed}"
                 )
     elif not isinstance(seed, int):
         seed = int(seed)
 
     if not (min_seed_value <= seed <= max_seed_value):
-        pylogger.warn(
-            f"{seed} is not in bounds, numpy accepts from {min_seed_value} to {max_seed_value}"
+        pylogger.warning(
+            f"{seed} is out of bounds (must be between {min_seed_value} and {max_seed_value}). Selecting a new seed."
         )
-        seed = _select_seed_randomly(min_seed_value, max_seed_value)
+        seed = _select_seed_randomly()
 
     pylogger.info(f"Seed set to {seed}")
     os.environ["PL_GLOBAL_SEED"] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    try:
+        import torch
+
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+    except ImportError:
+        pylogger.info("PyTorch not installed; skipping torch seeding.")
 
     return seed
