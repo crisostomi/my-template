@@ -9,13 +9,13 @@ package_name:
 description:
   type: str
   help: "Enter a short description of your project"
-  default: "A Python project generated with grok-ai/py-template."
+  default: "Awesome new project."
 
 maintainers:
   type: yaml
   help: "Enter a list of maintainers (name and optional email)"
   default:
-    - { name: "Your Name", email: "your.email@example.com" }
+    - { name: "Donato Crisostomi", email: "donatocrisostomi@gmail.com" }
 
 remote_option:
   help: "Do you want to push the project to an existing repository? If so, how would you like to add the remote?"
@@ -44,7 +44,7 @@ remote_github_protocol:
 remote_github_username:
   type: str
   help: "Enter your GitHub username"
-  default: "grok-ai"
+  default: "crisostomi"
   when: "{{ remote_option == 'GitHub' }}"
 
 remote_github_project:
