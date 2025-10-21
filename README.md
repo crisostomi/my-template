@@ -11,7 +11,7 @@ You can create a new project in **two ways**:
 Run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/grok-ai/py-template/main/setup.sh -o setup.sh && bash setup.sh
+curl -fsSL https://raw.githubusercontent.com/crisostomi/my-template/main/setup.sh -o setup.sh && bash setup.sh
 ```
 
 This will:
