@@ -53,6 +53,11 @@ remote_github_project:
   default: "{{ package_name }}"
   when: "{{ remote_option == 'GitHub' }}"
 
+default_branch:
+  type: str
+  help: "Name of the default Git branch"
+  default: "main"
+
 push_to_remote:
   type: bool
   help: "Do you want to push the project to the remote repository?"
@@ -82,7 +87,7 @@ dependencies:
   help: "Enter a list of dependencies (comma-separated). The suggested ones are essential for the template to fully work."
   default: |
     - rich
-    - dvc
+    - hydra-core
     - python-dotenv
     - GitPython
     {% if use_precommit %}- pre-commit{% endif %}
