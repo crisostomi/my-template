@@ -109,12 +109,37 @@ remote:
     {%- endif %}
 
 _tasks:
-  - "rm -rf setup.sh .github" # Remove template-specific files
+  - "rm -rf setup.sh .github"
   - "{% if env_init %}uv sync{% endif %}"
-  - "git init"
-  - "{% if use_precommit %}uv run pre-commit install{% endif %}" # Assuming pre-commit is installed system-wide or in the venv
+
+  # Initialize repo. Use -b when available; otherwise fall back to plain init.
+  # If already inside a git repo, skip re-init.
+  - >
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1
+    || (git init -b {{ default_branch }} 2>/dev/null || git init)
+
+  # Ensure we end up on {{ default_branch }} even if init defaulted to master (or anything else).
+  - >
+    CURRENT_BRANCH=$(git symbolic-ref --quiet --short HEAD || echo);
+    if [ -z "$CURRENT_BRANCH" ]; then
+      # No branch yet (rare), create it
+      git checkout -b {{ default_branch }};
+    elif [ "$CURRENT_BRANCH" != "{{ default_branch }}" ]; then
+      # Rename whatever we got (e.g., 'master') to {{ default_branch }}
+      git branch -M {{ default_branch }};
+    fi
+
+  # Pre-commit hooks (optional)
+  - "{% if use_precommit %}uv run pre-commit install{% endif %}"
+
+  # First commit
   - "git add ."
-  - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify"
-  # Add remote only if it's set
-  - "{% if remote_option != 'No' %}git remote add origin {{ remote.strip() }}{% endif %}"
-  - "{% if remote_option != 'No' and push_to_remote %}git push -u origin main{% endif %}"
+  - "git commit -m 'Project initialization with https://github.com/grok-ai/py-template' --no-verify || true"
+
+  # Add remote only if requested
+  - "{% if remote_option != 'No' %}git remote add origin {{ remote.strip() }} 2>/dev/null || git remote set-url origin {{ remote.strip() }}{% endif %}"
+
+  # Push to the branch we actually have (which we ensured is {{ default_branch }})
+  - "{% if remote_option != 'No' and push_to_remote %}git push -u origin {{ default_branch }}{% endif %}"
+
+
