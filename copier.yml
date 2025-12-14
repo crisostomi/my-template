@@ -120,8 +120,7 @@ _tasks:
   # Initialize repo. Use -b when available; otherwise fall back to plain init.
   # If already inside a git repo, skip re-init.
   - >
-    git rev-parse --is-inside-work-tree >/dev/null 2>&1
-    || (git init -b {{ default_branch }} 2>/dev/null || git init)
+    [ -d .git ] || (git init -b {{ default_branch }} 2>/dev/null || git init)
 
   # Ensure we end up on {{ default_branch }} even if init defaulted to master (or anything else).
   - >
